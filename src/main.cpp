@@ -14,7 +14,7 @@
 #include "behavior.h"
 #include "trajectory.h"
 #include "cost.h"
-#include "predictions.h"
+#include "prediction.h"
 
 #include "params.h"
 
@@ -57,7 +57,7 @@ int main() {
   // car_speed: current speed
   // car_speed_target: speed at end of the planned trajectory
   // double car_speed_target = 1.0; // mph (non 0 for XY spline traj generation to avoid issues)
-  CarData car = CarData(0., 0., 0., 0., 0.,  0., 1.0, 0., false);
+  CarStates car = CarStates(0., 0., 0., 0., 0.,  0., 1.0, 0., false);
 
   // keep track of previous s and d paths: to initialize for continuity the new trajectory
   TrajectorySD prev_path_sd;
@@ -107,7 +107,7 @@ int main() {
             double end_path_d = j[1]["end_path_d"];
 
             // Sensor Fusion Data, a list of all other cars on the same side of the road.
-            vector<vector<double>> sensor_fusion = j[1]["sensor_fusion"];
+            SensorFusionType sensor_fusion = j[1]["sensor_fusion"];
 
             json msgJson;
 
@@ -122,7 +122,8 @@ int main() {
             vector<double> frenet_car = map.getFrenet(car.x, car.y, deg2rad(car.yaw));
             car.s = frenet_car[0];
             car.d = frenet_car[1];
-            car.lane = get_lane(car.d);
+            car.lane = (int)(car.d / LANE_WIDTH);
+
             cout << "car.s=" << car.s << " car.d=" << car.d << endl;
 
             if (start) {
@@ -138,7 +139,7 @@ int main() {
 
             // --------------------------------------------------------------------------
             // --- 6 car predictions x 50 points x 2 coord (x,y): 6 objects predicted over 1 second horizon ---
-            Predictions predictions = Predictions(sensor_fusion, car, PARAM_NB_POINTS /* 50 */);
+            Prediction predictions = Prediction(sensor_fusion, car, PARAM_NB_POINTS /* 50 */);
 
             Behavior behavior = Behavior(sensor_fusion, car, predictions);
             vector<Target> targets = behavior.get_targets();

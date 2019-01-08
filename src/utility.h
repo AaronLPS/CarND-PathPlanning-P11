@@ -16,31 +16,31 @@ enum {
   SIZE    // 7
 };
 
-struct Coord {
-  double x;
-  double y;
-};
+//struct Coord {
+//  double x;
+//  double y;
+//};
 
-struct Frenet {
-  double s;
-  double d;
-};
+//struct Frenet {
+//  double s;
+//  double d;
+//};
 
 
-struct CarData {
-  double x;
-  double y;
-  double s;
-  double d;
-  double yaw;
-  double speed;
-  double speed_target;
-  int    lane;
-  bool   emergency;
-  CarData (double X=0, double Y=0, double S=0, double D=0, double YAW=0, 
-           double V=0, double VF=0, double L=0, bool E=false) : x(X), y(Y), s(S), yaw(YAW), 
-           speed(V), speed_target(VF), lane(L), emergency(E) {}
-};
+//struct CarData {
+//  double x;
+//  double y;
+//  double s;
+//  double d;
+//  double yaw;
+//  double speed;
+//  double speed_target;
+//  int    lane;
+//  bool   emergency;
+//  CarData (double X=0, double Y=0, double S=0, double D=0, double YAW=0,
+//           double V=0, double VF=0, double L=0, bool E=false) : x(X), y(Y), s(S), yaw(YAW),
+//           speed(V), speed_target(VF), lane(L), emergency(E) {}
+//};
 
 typedef std::vector<double > t_coord;
 typedef std::vector<t_coord> t_traj;
@@ -50,7 +50,7 @@ typedef std::vector<t_traj > t_trajSet;
 // For converting back and forth between radians and degrees.
 double deg2rad(double x);
 double rad2deg(double x);
-double mph_to_ms(double mph); // m.s-1
+//double mph_to_ms(double mph); // m.s-1
 double ms_to_mph(double ms);
 
 // d coord for "left lane" of a lane
@@ -60,7 +60,7 @@ double get_dright(int lane);
 // d coord for "center lane" of a lane
 double get_dcenter(int lane);
 
-int get_lane(double d);
+//int get_lane(double d);
 
 double distance(double x1, double y1, double x2, double y2);
 

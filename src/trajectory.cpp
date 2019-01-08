@@ -27,7 +27,7 @@ TrajectoryJMT JMT_init(double car_s, double car_d)
 }
 
 
-Trajectory::Trajectory(std::vector<Target> targets, Map &map, CarData &car, PreviousPath &previous_path, Predictions &predictions)
+Trajectory::Trajectory(std::vector<Target> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions)
 {
   for (size_t i = 0; i < targets.size(); i++) {
     TrajectoryXY trajectory;
@@ -278,7 +278,7 @@ TrajectoryJMT Trajectory::generate_trajectory_jmt(Target target, Map &map, Previ
 // trajectory generated in (s, d) Frenet coordinates 
 // - with constant accel/decel (no JMT here) in between 2 s waypoints
 // - without d changes (we stay in the same lane)
-TrajectoryJMT Trajectory::generate_trajectory_sd(Target target, Map &map, CarData const &car, PreviousPath const &previous_path)
+TrajectoryJMT Trajectory::generate_trajectory_sd(Target target, Map &map, CarStates const &car, PreviousPath const &previous_path)
 {
   TrajectoryJMT traj_jmt;
 
@@ -355,7 +355,7 @@ TrajectoryJMT Trajectory::generate_trajectory_sd(Target target, Map &map, CarDat
 }
 
 
-TrajectoryXY Trajectory::generate_trajectory(Target target, Map &map, CarData const &car, PreviousPath const &previous_path)
+TrajectoryXY Trajectory::generate_trajectory(Target target, Map &map, CarStates const &car, PreviousPath const &previous_path)
 {
   TrajectoryXY previous_path_xy = previous_path.xy;
   int prev_size = previous_path.num_xy_reused;

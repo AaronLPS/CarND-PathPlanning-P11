@@ -2,12 +2,12 @@
 
 using namespace std;
 
-Behavior::Behavior(vector<vector<double>> const &sensor_fusion, CarData car, Predictions const &predictions) {
+Behavior::Behavior(SensorFusionType const &sensor_fusion, CarStates car, Prediction const &predictions) {
   Target target;
   target.time = 2.0;
   double car_speed_target = car.speed_target;
 
-  double safety_distance = predictions.get_safety_distance();
+  double safety_distance = predictions.OutputSafetyDistance();
 
   // reasoning point by point (not end_point by end_point)
   if (car.emergency)
@@ -154,7 +154,7 @@ Behavior::Behavior(vector<vector<double>> const &sensor_fusion, CarData car, Pre
 
   // Last target/candidate: emergency trajectory (just in case we have no better choice)
   target.lane = car.lane;
-  target.velocity = predictions.get_lane_speed(car.lane);
+  target.velocity = predictions.OutputLaneSpeed(car.lane);
   target.time = 0.0; // ASAP ... (identified as emergency target)
   target.accel = -0.85 * PARAM_MAX_ACCEL;
   targets_.push_back(target);

@@ -80,12 +80,12 @@ bool Cost::check_collision(double x0, double y0, double theta0, double x1, doubl
   return true;
 }
 
-int Cost::check_collision_on_trajectory(TrajectoryXY const &trajectory, std::map<int, vector<Coord> > &predictions)
+int Cost::check_collision_on_trajectory(TrajectoryXY const &trajectory, std::map<int, vector<EuclideanCoord> > &predictions)
 {
-  std::map<int, vector<Coord> >::iterator it = predictions.begin();
+  std::map<int, vector<EuclideanCoord> >::iterator it = predictions.begin();
   while(it != predictions.end()) {
     int fusion_index = it->first;
-    vector<Coord> prediction = it->second;
+    vector<EuclideanCoord> prediction = it->second;
 
     assert(prediction.size() == trajectory.x_vals.size());
     assert(prediction.size() == trajectory.y_vals.size());
@@ -182,16 +182,16 @@ bool Cost::check_max_capabilities(vector<vector<double>> &traj)
 }
 
 
-double Cost::get_predicted_dmin(TrajectoryXY const &trajectory, std::map<int, vector<Coord> > &predictions)
+double Cost::get_predicted_dmin(TrajectoryXY const &trajectory, std::map<int, std::vector<EuclideanCoord> > &predictions)
 {
   double dmin = INF;
 
-  std::map<int, vector<Coord> >::iterator it = predictions.begin();
+  std::map<int, vector<EuclideanCoord> >::iterator it = predictions.begin();
   while(it != predictions.end())
   {
     int fusion_index = it->first;
     //cout << "fusion_index=" << fusion_index << endl;
-    vector<Coord> prediction = it->second;
+    vector<EuclideanCoord> prediction = it->second;
 
     assert(prediction.size() == trajectory.x_vals.size());
     assert(prediction.size() == trajectory.y_vals.size());
@@ -215,7 +215,7 @@ double Cost::get_predicted_dmin(TrajectoryXY const &trajectory, std::map<int, ve
 }
 
 
-Cost::Cost(TrajectoryXY const &trajectory, Target target, Predictions &predict, int car_lane)
+Cost::Cost(TrajectoryXY const &trajectory, Target target, Prediction &predict, int car_lane)
 {
   cost_ = 0; // lower cost preferred
 
@@ -225,7 +225,7 @@ Cost::Cost(TrajectoryXY const &trajectory, Target target, Predictions &predict, 
   double cost_comfort = 0; // vs jerk
   double cost_efficiency = 0; // vs desired lane and time to goal
 
-  std::map<int, vector<Coord> > predictions = predict.get_predictions();
+  std::map<int, vector<EuclideanCoord>> predictions = predict.OutputPredictions();
 
   // 1) FEASIBILITY cost
   cost_feasibility += check_collision_on_trajectory(trajectory, predictions);
@@ -257,10 +257,10 @@ Cost::Cost(TrajectoryXY const &trajectory, Target target, Predictions &predict, 
 
   // sensor_fusion speed in m/s !!!
   //cost_efficiency = PARAM_MAX_SPEED - predictions_lane_speed[target.lane];
-  cost_efficiency = PARAM_FOV - predict.get_lane_free_space(target.lane);
+  cost_efficiency = PARAM_FOV - predict.OutputLaneFreeSpace(target.lane);
   cost_ = cost_ + PARAM_COST_EFFICIENCY * cost_efficiency;
 
-  cout << "car_lane=" << car_lane << " target.lane=" << target.lane << " target_lvel=" << predict.get_lane_speed(target.lane) << " cost=" << cost_ << endl;
+  cout << "car_lane=" << car_lane << " target.lane=" << target.lane << " target_lvel=" << predict.OutputLaneSpeed(target.lane) << " cost=" << cost_ << endl;
 }
 
 Cost::~Cost() {}

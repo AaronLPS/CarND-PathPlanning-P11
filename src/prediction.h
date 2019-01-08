@@ -1,0 +1,58 @@
+#ifndef PREDICTION_H
+#define PREDICTION_H
+
+
+#include <vector>
+#include <map>
+#include <math.h>
+#include <iostream>
+
+#include "basic_types.h"
+#include "configuration.h"
+
+using namespace std;
+
+class Prediction
+{
+public:
+    Prediction(vector<vector<double>> const &sensor_fusion, CarStates const &car_states, int vision_range);
+    ~Prediction();
+
+    map<int, vector<EuclideanCoord>> OutputPredictions() const { return xy_predicted_in_vision;}
+    double OutputSafetyDistance() const;
+    double OutputLaneSpeed(int lane) const;
+    double OutputLaneFreeSpace(int lane) const;
+
+
+private:
+    vector<int> DetectObjects(SensorFusionType const &sensor_fusion, CarStates const &car_states);
+    void SetSafetyDistances(SensorFusionType const &sensor_fusion, CarStates const &car_states);
+    double GetSensorFusionVelocity(SensorFusionType const &sensor_fusion, int idx, double default_vel);
+    double GetSafetyDistance(double vel_back, double vel_front, double ego_decelerate, double time_latency);
+    void SetLaneInfo(SensorFusionType const &sensor_fusion, CarStates const &car_states);
+
+
+private:
+    vector<double> front_distance_closest = {INFINITY,INFINITY, INFINITY}; //closest distance to car, per lane
+    vector<double> back_distance_closest = {INFINITY,INFINITY, INFINITY}; //closest distance to car, per lane
+    vector<int> front_obj_closest = {-1,-1, -1}; //index
+    vector<int> back_obj_closest = {-1,-1, -1}; //index
+
+    map<int, vector<EuclideanCoord>> xy_predicted_in_vision; //predicted position(xy)
+
+    //Front cars' velocity, and their safety distance; There are 3 lanes
+    vector<double> front_velocity = {CAR_MAX_SPEED, CAR_MAX_SPEED, CAR_MAX_SPEED};
+    vector<double> front_safety_distance = {SAFETY_DISTANCE_LANE_CHANGE, SAFETY_DISTANCE_LANE_CHANGE, SAFETY_DISTANCE_LANE_CHANGE};
+    //Back cars' ...
+    vector<double> back_velocity = {CAR_MAX_SPEED, CAR_MAX_SPEED, CAR_MAX_SPEED};
+    vector<double> back_safety_distance = {SAFETY_DISTANCE_LANE_CHANGE, SAFETY_DISTANCE_LANE_CHANGE, SAFETY_DISTANCE_LANE_CHANGE};
+
+    double safety_distance;
+    //Lane info
+    double lane_speed[HIGHWAY_LANE_NUMBERS];
+    double lane_free_space[HIGHWAY_LANE_NUMBERS];
+
+
+};
+
+#endif // PREDICTION_H

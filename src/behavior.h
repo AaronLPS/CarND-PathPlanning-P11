@@ -8,7 +8,7 @@
 
 #include "params.h"
 #include "utility.h"
-#include "predictions.h"
+#include "prediction.h"
 
 struct Target {
   double lane;
@@ -21,7 +21,7 @@ struct Target {
 
 class Behavior {
 public:
-  Behavior(std::vector<std::vector<double>> const &sensor_fusion, CarData car, Predictions const &predictions);
+  Behavior(std::vector<std::vector<double>> const &sensor_fusion, CarStates car, Prediction const &predictions);
   virtual ~Behavior();
   std::vector<Target> get_targets();
 
