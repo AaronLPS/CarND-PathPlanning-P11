@@ -27,7 +27,7 @@ TrajectoryJMT JMT_init(double car_s, double car_d)
 }
 
 
-Trajectory::Trajectory(std::vector<Target> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions)
+Trajectory::Trajectory(std::vector<BehaviourTarget> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions)
 {
   for (size_t i = 0; i < targets.size(); i++) {
     TrajectoryXY trajectory;
@@ -152,7 +152,7 @@ double Trajectory::polyeval_ddot(vector<double> c, double t) {
 
 
 
-TrajectoryJMT Trajectory::generate_trajectory_jmt(Target target, Map &map, PreviousPath const &previous_path)
+TrajectoryJMT Trajectory::generate_trajectory_jmt(BehaviourTarget target, Map &map, PreviousPath const &previous_path)
 {
   TrajectoryJMT traj_jmt;
 
@@ -278,7 +278,7 @@ TrajectoryJMT Trajectory::generate_trajectory_jmt(Target target, Map &map, Previ
 // trajectory generated in (s, d) Frenet coordinates 
 // - with constant accel/decel (no JMT here) in between 2 s waypoints
 // - without d changes (we stay in the same lane)
-TrajectoryJMT Trajectory::generate_trajectory_sd(Target target, Map &map, CarStates const &car, PreviousPath const &previous_path)
+TrajectoryJMT Trajectory::generate_trajectory_sd(BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path)
 {
   TrajectoryJMT traj_jmt;
 
@@ -319,7 +319,7 @@ TrajectoryJMT Trajectory::generate_trajectory_sd(Target target, Map &map, CarSta
     d = car.d, d_dot = 0, d_ddot = 0;
   }
 
-  s_ddot = target.accel;  //-PARAM_MAX_ACCEL;
+  s_ddot = target.acceleration;  //-PARAM_MAX_ACCEL;
 
   //double t = 0.0; continuity point reused
   double t = PARAM_DT;
@@ -328,8 +328,8 @@ TrajectoryJMT Trajectory::generate_trajectory_sd(Target target, Map &map, CarSta
 
     // increase/decrease speed till target velocity is reached
     s_dot += s_ddot * PARAM_DT; 
-    if ((target.accel > 0 && prev_s_dot <= target_velocity_ms && s_dot > target_velocity_ms) ||
-        (target.accel < 0 && prev_s_dot >= target_velocity_ms && s_dot < target_velocity_ms)) {
+    if ((target.acceleration > 0 && prev_s_dot <= target_velocity_ms && s_dot > target_velocity_ms) ||
+        (target.acceleration < 0 && prev_s_dot >= target_velocity_ms && s_dot < target_velocity_ms)) {
       s_dot = target_velocity_ms;
     }
     s_dot = max(min(s_dot, 0.9 * PARAM_MAX_SPEED), 0.0);
@@ -355,7 +355,7 @@ TrajectoryJMT Trajectory::generate_trajectory_sd(Target target, Map &map, CarSta
 }
 
 
-TrajectoryXY Trajectory::generate_trajectory(Target target, Map &map, CarStates const &car, PreviousPath const &previous_path)
+TrajectoryXY Trajectory::generate_trajectory(BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path)
 {
   TrajectoryXY previous_path_xy = previous_path.xy;
   int prev_size = previous_path.num_xy_reused;

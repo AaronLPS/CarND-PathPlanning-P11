@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "map.h"
-#include "behavior.h"
+#include "behaviour.h"
 #include "spline.h"
 #include "utility.h"
 #include "map.h"
@@ -55,7 +55,7 @@ TrajectoryJMT JMT_init(double car_s, double car_d);
 
 class Trajectory {
 public:
-  Trajectory(std::vector<Target> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions);
+  Trajectory(std::vector<BehaviourTarget> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions);
   ~Trajectory() {};
 
   double getMinCost() { return min_cost_; };
@@ -75,9 +75,9 @@ private:
   double polyeval_dot(std::vector<double> c, double t);
   double polyeval_ddot(std::vector<double> c, double t);
 
-  TrajectoryXY generate_trajectory     (Target target, Map &map, CarStates const &car, PreviousPath const &previous_path);
-  TrajectoryJMT generate_trajectory_jmt(Target target, Map &map, PreviousPath const &previous_path);
-  TrajectoryJMT generate_trajectory_sd(Target target, Map &map, CarStates const &car, PreviousPath const &previous_path);
+  TrajectoryXY generate_trajectory     (BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path);
+  TrajectoryJMT generate_trajectory_jmt(BehaviourTarget target, Map &map, PreviousPath const &previous_path);
+  TrajectoryJMT generate_trajectory_sd(BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path);
 };
 
 #endif // TRAJECTORY_H

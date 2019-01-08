@@ -31,7 +31,7 @@ const double PARAM_MAX_JERK  = 10; // m.s-3 average jerk over 1 second
 const double PARAM_FOV = 70.0; // Field Of View
 
 const double PARAM_MAX_SPEED_INC = PARAM_MAX_ACCEL * PARAM_DT; // m.s-1 per 0.02 sec
-const double PARAM_MAX_SPEED_INC_MPH = ms_to_mph(PARAM_MAX_SPEED_INC);
+//const double PARAM_MAX_SPEED_INC_MPH = ms_to_mph(PARAM_MAX_SPEED_INC);
 
 const double PARAM_DIST_SAFETY = 3.5; // meters
 

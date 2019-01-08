@@ -215,7 +215,7 @@ double Cost::get_predicted_dmin(TrajectoryXY const &trajectory, std::map<int, st
 }
 
 
-Cost::Cost(TrajectoryXY const &trajectory, Target target, Prediction &predict, int car_lane)
+Cost::Cost(TrajectoryXY const &trajectory, BehaviourTarget target, Prediction &predict, int car_lane)
 {
   cost_ = 0; // lower cost preferred
 

@@ -45,5 +45,6 @@ struct FrenetCoord{
 };
 
 double mph_to_ms(double mph);
+double ms_to_mph(double ms);
 
 #endif // BASIC_TYPES_H

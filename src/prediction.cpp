@@ -184,7 +184,8 @@ double Prediction::OutputSafetyDistance() const{
 }
 
 
-/*
+/* @brief calculate the acceptable speed and the free space of each lane
+ *
  *
  * */
 void Prediction::SetLaneInfo(SensorFusionType const &sensor_fusion, CarStates const &car_states)
@@ -220,7 +221,9 @@ void Prediction::SetLaneInfo(SensorFusionType const &sensor_fusion, CarStates co
   }
 }
 
-
+/* @return lane_speed[lane]: the acceptable speed of the lane
+ *
+ * */
 double Prediction::OutputLaneSpeed(int lane) const {
   if (lane >= 0 && lane < HIGHWAY_LANE_NUMBERS) {
     return lane_speed[lane];
@@ -229,6 +232,9 @@ double Prediction::OutputLaneSpeed(int lane) const {
   }
 }
 
+/* @return lane_free_space[lane]: the acceptable free space of the lane
+ *
+ * */
 double Prediction::OutputLaneFreeSpace(int lane) const {
   if (lane >= 0 && lane < HIGHWAY_LANE_NUMBERS) {
     return lane_free_space[lane];

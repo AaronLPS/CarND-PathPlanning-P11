@@ -11,7 +11,7 @@
 
 //#include "utility.h"
 #include "map.h"
-#include "behavior.h"
+#include "behaviour.h"
 #include "trajectory.h"
 #include "cost.h"
 #include "prediction.h"
@@ -141,8 +141,8 @@ int main() {
             // --- 6 car predictions x 50 points x 2 coord (x,y): 6 objects predicted over 1 second horizon ---
             Prediction predictions = Prediction(sensor_fusion, car, PARAM_NB_POINTS /* 50 */);
 
-            Behavior behavior = Behavior(sensor_fusion, car, predictions);
-            vector<Target> targets = behavior.get_targets();
+            Behaviour behaviour = Behaviour(sensor_fusion, car, predictions);
+            vector<BehaviourTarget> targets = behaviour.OutputBehaviourTarget();
 
             Trajectory trajectory = Trajectory(targets, map, car, previous_path, predictions);
             // --------------------------------------------------------------------------
