@@ -6,8 +6,6 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
 
-
-
 TrajectoryJMT JMT_init(double car_s, double car_d)
 {
   TrajectoryJMT traj_jmt;

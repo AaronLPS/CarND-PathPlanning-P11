@@ -1,5 +1,11 @@
 #include "behaviour.h"
 
+/* @brief decide the target(lane and speed) on Behaviour Layer, based on Prediction Layer and Localization layer.
+ * @param sensor_fusion: input detected objects' states: [ id, x, y, vx, vy, s, d]
+ * @param car_states: the autonomous vehicel (ego)
+ * @param prediction: input predicted lane speed
+ *
+ * */
 Behaviour::Behaviour(SensorFusionType const &sensor_fusion, CarStates const &car_states, Prediction const &prediction){
     BehaviourTarget behaviour_target;
     behaviour_target.time = 2.0;
