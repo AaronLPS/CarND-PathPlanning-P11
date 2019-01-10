@@ -27,26 +27,26 @@ Trajectory::Trajectory(vector<BehaviourTarget> targets, Map &map, CarStates &car
         //calculate cost function for each trajectory
         Cost cost = Cost(trajectory, targets[i], predictions, car.lane);
         costs_.push_back(cost);
-        trajectories_.push_back(trajectory);
+        trajectories_list.push_back(trajectory);
     }
   
-  // --- retrieve the lowest cost trajectory ---
-  min_cost_ = INF;
-  min_cost_index_ = 0;
-  for (size_t i = 0; i < costs_.size(); i++) {
-    if (costs_[i].get_cost() < min_cost_) {
-      min_cost_ = costs_[i].get_cost();
-      min_cost_index_ = i;
+    //retrieve the lowest cost trajectory
+    min_cost = INFINITY;
+    min_cost_index = 0;
+    for (int i = 0; i < costs_.size(); i++) {
+        if (costs_[i].get_cost() < min_cost) {
+            min_cost = costs_[i].get_cost();
+            min_cost_index = i;
+        }
     }
-  }
 
   // enforce emergency traj: last one (in case of unavoidable collision we prefer lower speed anyways)
-  if (min_cost_ >= PARAM_COST_FEASIBILITY) {
-    min_cost_index_ = costs_.size() - 1;
-    min_cost_ = costs_[min_cost_index_].get_cost();
+  if (min_cost >= WEIGHT_COST_FEASIBILITY) {
+    min_cost_index = costs_.size() - 1;
+    min_cost = costs_[min_cost_index].get_cost();
   }
 
-  if (targets[min_cost_index_].time == 0) {
+  if (targets[min_cost_index].time == 0) {
     car.emergency = true;
   } else {
     car.emergency = false;

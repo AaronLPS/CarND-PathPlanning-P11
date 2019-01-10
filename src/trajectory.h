@@ -56,10 +56,10 @@ public:
   Trajectory(vector<BehaviourTarget> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions);
   ~Trajectory() {}
 
-  double getMinCost() { return min_cost_; }
-  double getMinCostIndex() { return min_cost_index_; }
-  TrajectoryXY getMinCostTrajectoryXY() { return trajectories_[min_cost_index_]; }
-  TrajectorySD getMinCostTrajectorySD() { return trajectories_sd_list[min_cost_index_]; }
+  double getMinCost() { return min_cost; }
+  double getMinCostIndex() { return min_cost_index; }
+  TrajectoryXY getMinCostTrajectoryXY() { return trajectories_list[min_cost_index]; }
+  TrajectorySD getMinCostTrajectorySD() { return trajectories_sd_list[min_cost_index]; }
 
 
 private:
@@ -76,10 +76,10 @@ private:
 
 private:
   vector<class Cost> costs_;
-  vector<TrajectoryXY> trajectories_;
+  vector<TrajectoryXY> trajectories_list;
   vector<TrajectorySD> trajectories_sd_list;
-  double min_cost_;
-  int min_cost_index_;
+  double min_cost;
+  int min_cost_index;
 };
 
 

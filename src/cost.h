@@ -8,9 +8,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "utility.h"
 #include "basic_types.h"
-#include "params.h"
 #include "configuration.h"
 
 #include "prediction.h"
@@ -29,11 +27,12 @@ public:
   double get_cost();
 
 private:
-  bool check_collision(double x0, double y0, double theta0, double x1, double y1, double theta1);
-  int  check_collision_on_trajectory(struct TrajectoryXY const &trajectory, map<int, vector<EuclideanCoord> > &predictions);
+  bool CollisionDetectionSAT(double x0, double y0, double theta0, double x1, double y1, double theta1);
+  int  DetectCollision(struct TrajectoryXY const &trajectory, map<int, vector<EuclideanCoord> > &predictions);
   bool check_max_capabilities(vector<vector<double>> &traj);
   double get_predicted_dmin(struct TrajectoryXY const &trajectory, map<int, vector<EuclideanCoord> > &predictions);
 
+private:
   double trajectory_cost;
 };
 

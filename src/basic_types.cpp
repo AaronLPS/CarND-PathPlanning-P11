@@ -1,5 +1,6 @@
 #include "basic_types.h"
 #include "configuration.h"
+#include <math.h>
 
 #define M_PI        3.14159265358979323846264338327950288   /* pi             */
 
@@ -31,4 +32,8 @@ double deg2rad(double x) {
 
 double rad2deg(double x) {
     return x * 180 / M_PI;
+}
+
+double distance(double x1, double y1, double x2, double y2) {
+    return sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
 }

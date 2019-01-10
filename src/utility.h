@@ -62,7 +62,7 @@ typedef std::vector<t_traj > t_trajSet;
 
 //int get_lane(double d);
 
-double distance(double x1, double y1, double x2, double y2);
+//double distance(double x1, double y1, double x2, double y2);
 
 
 #endif // UTILITY_H

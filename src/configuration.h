@@ -17,11 +17,14 @@ const double DT_PER_POINT = 0.02; //  time interval: 0.02 s per waypoint (map)
 
 const double CAR_MAX_SPEED_MPH = 47; //MPH ~ 21 m/s
 
-const double CAR_MAX_ACCELERATION = 9.0; // m/s^2
+const double CAR_MAX_ACCELERATION = 10.0; // m/s^2
 const double CAR_MAX_SPEED = 21.0; // m/s
+const double CAR_MAX_JERK  = 10; // m/s^3
 //extra margin for safety: safety box
 const double SAFETY_MARGIN_LATERAL = 3.0; // m
 const double SAFETY_MARGIN_LONGITUDINAL = 6.0; // m
+const int MAX_COLLISION_STEP = 25; // detect collision in this range(waypoints) in front
+
 
 const int HIGHWAY_LANE_NUMBERS = 3; //3 lanes
 
@@ -36,10 +39,15 @@ const double MAX_SPEED_INC_MPH = ms_to_mph(MAX_SPEED_INC);
 const bool TRAJECTORY_JMT_ENABLE = true;
 const int TRAJECTORY_WAYPOINTS_NUMBER = 50;
 
-// reduce latency reaction, but account for simulator latency ...
 // assume 100 ms max simulator latency
 const int REACTION_LATENCY_WAYPOINTS = 5; // waypoints
 
+//weighted cost function: high weight with high critical
+const int WEIGHT_COST_FEASIBILITY = 10000; // vs collisions, vs vehicle capabilities
+const int WEIGHT_COST_SAFETY      = 1000; // vs buffer distance, vs visibility or curvature
+const int WEIGHT_COST_LEGALITY    = 100; // vs speed limits
+const int WEIGHT_COST_COMFORT     = 10; // vs jerk
+const int WEIGHT_COST_EFFICIENCY  = 1; // vs target lane, target speed and time to goal
 
 
 

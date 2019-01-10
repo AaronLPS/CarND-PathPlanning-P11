@@ -49,5 +49,7 @@ double ms_to_mph(double ms);
 double get_dcenter(int lane);
 double deg2rad(double x);
 double rad2deg(double x);
+double distance(double x1, double y1, double x2, double y2);
+
 
 #endif // BASIC_TYPES_H
