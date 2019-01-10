@@ -135,7 +135,7 @@ Behaviour::Behaviour(SensorFusionType const &sensor_fusion, CarStates const &car
     behaviour_target.lane = car_states.lane;
     behaviour_target.velocity = prediction.OutputLaneSpeed(car_states.lane);
     behaviour_target.time = 0.0; //ASAP
-    behaviour_target.acceleration = -0.9*CAR_MAX_ACCELERATION;
+    behaviour_target.acceleration = -0.8*CAR_MAX_ACCELERATION;
     behaviour_target_list.push_back(behaviour_target);
 }
 

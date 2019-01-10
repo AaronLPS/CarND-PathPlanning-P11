@@ -99,8 +99,8 @@ int main() {
             // Previous path data given to the Planner
             vector<double> previous_path_x = j[1]["previous_path_x"];
             vector<double> previous_path_y = j[1]["previous_path_y"];
-            previous_path_xy.x_vals = previous_path_x;
-            previous_path_xy.y_vals = previous_path_y;
+            previous_path_xy.path_x = previous_path_x;
+            previous_path_xy.path_y = previous_path_y;
 
             // Previous path's end s and d values
             double end_path_s = j[1]["end_path_s"];
@@ -115,7 +115,7 @@ int main() {
 
             map.testError(car.x, car.y, car.yaw);
 
-            int prev_size = previous_path_xy.x_vals.size();
+            int prev_size = previous_path_xy.path_x.size();
             cout << "prev_size=" << prev_size << " car.x=" << car.x << " car.y=" << car.y << " car.s=" <<
                     car.s << " car.d=" << car.d << " car.speed=" << car.speed << " car.speed_target=" << car.speed_target << endl;
 
@@ -135,11 +135,11 @@ int main() {
             // -- prev_size: close to 100 msec when possible -not lower bcz of simulator latency- for trajectory (re)generation ---
             // points _before_ prev_size are kept from previous generated trajectory
             // points _after_  prev_size will be re-generated
-            PreviousPath previous_path = PreviousPath(previous_path_xy, prev_path_sd, min(prev_size, PARAM_PREV_PATH_XY_REUSED));
+            PreviousPath previous_path = PreviousPath(previous_path_xy, prev_path_sd, min(prev_size, REACTION_LATENCY_WAYPOINTS));
 
             // --------------------------------------------------------------------------
             // --- 6 car predictions x 50 points x 2 coord (x,y): 6 objects predicted over 1 second horizon ---
-            Prediction predictions = Prediction(sensor_fusion, car, PARAM_NB_POINTS /* 50 */);
+            Prediction predictions = Prediction(sensor_fusion, car, TRAJECTORY_WAYPOINTS_NUMBER /* 50 */);
 
             Behaviour behaviour = Behaviour(sensor_fusion, car, predictions);
             vector<BehaviourTarget> targets = behaviour.OutputBehaviourTarget();
@@ -149,10 +149,10 @@ int main() {
 
             double min_cost = trajectory.getMinCost();
             int min_cost_index = trajectory.getMinCostIndex();
-            vector<double> next_x_vals = trajectory.getMinCostTrajectoryXY().x_vals;
-            vector<double> next_y_vals = trajectory.getMinCostTrajectoryXY().y_vals;
+            vector<double> next_x_vals = trajectory.getMinCostTrajectoryXY().path_x;
+            vector<double> next_y_vals = trajectory.getMinCostTrajectoryXY().path_y;
 
-            if (PARAM_TRAJECTORY_JMT) {
+            if (TRAJECTORY_JMT_ENABLE) {
               prev_path_sd = trajectory.getMinCostTrajectorySD();
             }
 

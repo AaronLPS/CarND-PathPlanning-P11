@@ -15,7 +15,7 @@ using namespace std;
 class Prediction
 {
 public:
-    Prediction(vector<vector<double>> const &sensor_fusion, CarStates const &car_states, int vision_range);
+    Prediction(SensorFusionType const &sensor_fusion, CarStates const &car_states, int vision_range);
     ~Prediction();
 
     map<int, vector<EuclideanCoord>> OutputPredictions() const { return xy_predicted_in_vision;}

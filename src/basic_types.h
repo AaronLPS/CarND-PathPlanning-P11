@@ -46,5 +46,8 @@ struct FrenetCoord{
 
 double mph_to_ms(double mph);
 double ms_to_mph(double ms);
+double get_dcenter(int lane);
+double deg2rad(double x);
+double rad2deg(double x);
 
 #endif // BASIC_TYPES_H

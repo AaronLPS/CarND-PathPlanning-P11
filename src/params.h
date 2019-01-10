@@ -39,8 +39,6 @@ const double PARAM_DIST_SAFETY = 3.5; // meters
 // assume 100 ms max simulator latency
 const int PARAM_PREV_PATH_XY_REUSED = 5;
 
-const bool PARAM_TRAJECTORY_JMT = true;
-
 // some extra margin for safety: safety box around the car
 const double PARAM_CAR_SAFETY_W = 3; // meters
 const double PARAM_CAR_SAFETY_L = 6; // meters

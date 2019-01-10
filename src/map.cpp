@@ -1,5 +1,7 @@
 #include "utility.h"
+#include "basic_types.h"
 #include "params.h"
+#include "configuration.h"
 
 #include <vector>
 #include <iostream>

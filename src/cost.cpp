@@ -87,8 +87,8 @@ int Cost::check_collision_on_trajectory(TrajectoryXY const &trajectory, std::map
     int fusion_index = it->first;
     vector<EuclideanCoord> prediction = it->second;
 
-    assert(prediction.size() == trajectory.x_vals.size());
-    assert(prediction.size() == trajectory.y_vals.size());
+    assert(prediction.size() == trajectory.path_x.size());
+    assert(prediction.size() == trajectory.path_y.size());
 
     for (int i = 0; i < PARAM_MAX_COLLISION_STEP; i++) { // up to 50 (x,y) coordinates
       double obj_x = prediction[i].x;
@@ -97,10 +97,10 @@ int Cost::check_collision_on_trajectory(TrajectoryXY const &trajectory, std::map
       double obj_y_next = prediction[i+1].y;
       double obj_heading = atan2(obj_y_next - obj_y, obj_x_next - obj_x);
 
-      double ego_x = trajectory.x_vals[i];
-      double ego_y = trajectory.y_vals[i];
-      double ego_x_next = trajectory.x_vals[i+1];
-      double ego_y_next = trajectory.y_vals[i+1];
+      double ego_x = trajectory.path_x[i];
+      double ego_y = trajectory.path_y[i];
+      double ego_x_next = trajectory.path_x[i+1];
+      double ego_y_next = trajectory.path_y[i+1];
       double ego_heading = atan2(ego_y_next - ego_y, ego_x_next - ego_x);
 
       if (check_collision(obj_x, obj_y, obj_heading, ego_x, ego_y, ego_heading)) {
@@ -170,7 +170,7 @@ bool Cost::check_max_capabilities(vector<vector<double>> &traj)
       max_acc = acc;
   }
 
-  jerk_per_second = total_jerk / (PARAM_NB_POINTS * PARAM_DT);
+  jerk_per_second = total_jerk / (TRAJECTORY_WAYPOINTS_NUMBER * PARAM_DT);
 
   if (roundf(max_vel) > PARAM_MAX_SPEED || roundf(max_acc) > PARAM_MAX_ACCEL || jerk_per_second > PARAM_MAX_JERK) {
     cout << "max_vel=" << max_vel << " max_acc=" << max_acc << " jerk_per_second=" << jerk_per_second  << endl;
@@ -193,14 +193,14 @@ double Cost::get_predicted_dmin(TrajectoryXY const &trajectory, std::map<int, st
     //cout << "fusion_index=" << fusion_index << endl;
     vector<EuclideanCoord> prediction = it->second;
 
-    assert(prediction.size() == trajectory.x_vals.size());
-    assert(prediction.size() == trajectory.y_vals.size());
+    assert(prediction.size() == trajectory.path_x.size());
+    assert(prediction.size() == trajectory.path_y.size());
 
     for (size_t i = 0; i < prediction.size(); i++) { // up to 50 (x,y) coordinates
       double obj_x = prediction[i].x;
       double obj_y = prediction[i].y;
-      double ego_x = trajectory.x_vals[i];
-      double ego_y = trajectory.y_vals[i];
+      double ego_x = trajectory.path_x[i];
+      double ego_y = trajectory.path_y[i];
 
       double dist = distance(ego_x, ego_y, obj_x, obj_y);
       if (dist < dmin) {
@@ -215,17 +215,17 @@ double Cost::get_predicted_dmin(TrajectoryXY const &trajectory, std::map<int, st
 }
 
 
-Cost::Cost(TrajectoryXY const &trajectory, BehaviourTarget target, Prediction &predict, int car_lane)
+Cost::Cost(TrajectoryXY const &trajectory, BehaviourTarget target, Prediction &prediction, int car_lane)
 {
-  cost_ = 0; // lower cost preferred
+  trajectory_cost = 0; // initialize the cost with low value
 
-  double cost_feasibility = 0; // vs collisions, vs vehicle capabilities
-  double cost_safety = 0; // vs buffer distance, vs visibility
-  double cost_legality = 0; // vs speed limits
-  double cost_comfort = 0; // vs jerk
-  double cost_efficiency = 0; // vs desired lane and time to goal
+  double cost_feasibility = 0;  // vs collisions, vs vehicle capabilities
+  double cost_safety = 0;       // vs buffer distance, vs visibility
+  double cost_legality = 0;     // vs speed limits
+  double cost_comfort = 0;      // vs jerk
+  double cost_efficiency = 0;   // vs desired lane and time to goal
 
-  std::map<int, vector<EuclideanCoord>> predictions = predict.OutputPredictions();
+  map<int, vector<EuclideanCoord>> predictions = prediction.OutputPredictions();
 
   // 1) FEASIBILITY cost
   cost_feasibility += check_collision_on_trajectory(trajectory, predictions);
@@ -233,7 +233,7 @@ Cost::Cost(TrajectoryXY const &trajectory, BehaviourTarget target, Prediction &p
   //{
   //  cost_feasibility += 1;
   //}
-  cost_ = cost_ + PARAM_COST_FEASIBILITY * cost_feasibility;
+  trajectory_cost += PARAM_COST_FEASIBILITY * cost_feasibility;
 
   // 2) SAFETY cost
   // double dmin = get_predicted_dmin(trajectory, predictions);
@@ -243,13 +243,13 @@ Cost::Cost(TrajectoryXY const &trajectory, BehaviourTarget target, Prediction &p
   // } else {
   //   cost_safety = 0;
   // }
-  cost_ = cost_ + PARAM_COST_SAFETY * cost_safety;
+  trajectory_cost += PARAM_COST_SAFETY * cost_safety;
 
   // 3) LEGALITY cost
-  cost_ = cost_ + PARAM_COST_LEGALITY * cost_legality;
+  trajectory_cost += PARAM_COST_LEGALITY * cost_legality;
 
   // 4) COMFORT cost
-  cost_ = cost_ + PARAM_COST_COMFORT * cost_comfort;
+  trajectory_cost += PARAM_COST_COMFORT * cost_comfort;
 
   // 5) EFFICIENCY cost
   //cost_efficiency = PARAM_MAX_SPEED_MPH - target.velocity;
@@ -257,15 +257,15 @@ Cost::Cost(TrajectoryXY const &trajectory, BehaviourTarget target, Prediction &p
 
   // sensor_fusion speed in m/s !!!
   //cost_efficiency = PARAM_MAX_SPEED - predictions_lane_speed[target.lane];
-  cost_efficiency = PARAM_FOV - predict.OutputLaneFreeSpace(target.lane);
-  cost_ = cost_ + PARAM_COST_EFFICIENCY * cost_efficiency;
+  cost_efficiency = PARAM_FOV - prediction.OutputLaneFreeSpace(target.lane);
+  trajectory_cost += PARAM_COST_EFFICIENCY * cost_efficiency;
 
-  cout << "car_lane=" << car_lane << " target.lane=" << target.lane << " target_lvel=" << predict.OutputLaneSpeed(target.lane) << " cost=" << cost_ << endl;
+  cout << "car_lane=" << car_lane << " target.lane=" << target.lane << " target_lvel=" << prediction.OutputLaneSpeed(target.lane) << " cost=" << trajectory_cost << endl;
 }
 
 Cost::~Cost() {}
 
 double Cost::get_cost() 
 {
-  return cost_;
+  return trajectory_cost;
 }

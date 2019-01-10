@@ -8,14 +8,20 @@
 #include "map.h"
 #include "behaviour.h"
 #include "spline.h"
-#include "utility.h"
+#include "basic_types.h"
 #include "map.h"
 #include "cost.h"
-#include "params.h"
+#include "configuration.h"
 #include "prediction.h"
-
 #include "Eigen-3.3/Eigen/Dense"
 
+using namespace std;
+
+struct TrajectoryXY {
+    vector<double> path_x;
+    vector<double> path_y;
+    TrajectoryXY (vector<double> X={}, vector<double> Y={}) : path_x(X), path_y(Y) {}
+};
 
 // Point of a C2 class function
 struct PointC2 {
@@ -26,15 +32,9 @@ struct PointC2 {
 };
 
 struct TrajectorySD {
-  std::vector<PointC2> path_s;
-  std::vector<PointC2> path_d;
-  TrajectorySD (std::vector<PointC2> S={}, std::vector<PointC2> D={}) : path_s(S), path_d(D) {}
-};
-
-struct TrajectoryXY {
-  std::vector<double> x_vals;
-  std::vector<double> y_vals;
-  TrajectoryXY (std::vector<double> X={}, std::vector<double> Y={}) : x_vals(X), y_vals(Y) {}
+  vector<PointC2> path_s;
+  vector<PointC2> path_d;
+  TrajectorySD (vector<PointC2> S={}, vector<PointC2> D={}) : path_s(S), path_d(D) {}
 };
 
 struct TrajectoryJMT {
@@ -44,40 +44,47 @@ struct TrajectoryJMT {
 
 
 struct PreviousPath {
-  TrajectoryXY xy;   // < PARAM_NB_POINTS (some already used by simulator)
+  TrajectoryXY xy;   // < waypoints number (some already used by simulator)
   TrajectorySD sd;   // exactly PARAM_NB_POINTS (not sent to simulator)
   int num_xy_reused;  // reused from xy
   PreviousPath (TrajectoryXY XY={}, TrajectorySD SD={}, int N=0) : xy(XY), sd(SD), num_xy_reused(N) {}
 };
 
-TrajectoryJMT JMT_init(double car_s, double car_d);
-
 
 class Trajectory {
 public:
-  Trajectory(std::vector<BehaviourTarget> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions);
-  ~Trajectory() {};
+  Trajectory(vector<BehaviourTarget> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions);
+  ~Trajectory() {}
 
-  double getMinCost() { return min_cost_; };
-  double getMinCostIndex() { return min_cost_index_; } ;
-  TrajectoryXY getMinCostTrajectoryXY() { return trajectories_[min_cost_index_]; };
-  TrajectorySD getMinCostTrajectorySD() { return trajectories_sd_[min_cost_index_]; };
+  double getMinCost() { return min_cost_; }
+  double getMinCostIndex() { return min_cost_index_; }
+  TrajectoryXY getMinCostTrajectoryXY() { return trajectories_[min_cost_index_]; }
+  TrajectorySD getMinCostTrajectorySD() { return trajectories_sd_list[min_cost_index_]; }
+
 
 private:
-  std::vector<class Cost> costs_;
-  std::vector<TrajectoryXY> trajectories_;
-  std::vector<TrajectorySD> trajectories_sd_;
+  TrajectoryJMT GenerateTrajectoryEmergency(BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path);
+  TrajectoryJMT GenerateTrajectoryJMT(BehaviourTarget target, Map &map, PreviousPath const &previous_path);
+
+  vector<double> JMT(vector< double> start, vector <double> end, double T);
+  double calculate_polynomial(vector<double> c, double t);
+  double calculate_polynomial_dot(vector<double> c, double t);
+  double calculate_polynomial_ddot(vector<double> c, double t);
+
+  TrajectoryXY GenerateTrajectorySPLINE (BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path);
+
+
+private:
+  vector<class Cost> costs_;
+  vector<TrajectoryXY> trajectories_;
+  vector<TrajectorySD> trajectories_sd_list;
   double min_cost_;
   int min_cost_index_;
-
-  std::vector<double> JMT(std::vector< double> start, std::vector <double> end, double T);
-  double polyeval(std::vector<double> c, double t);
-  double polyeval_dot(std::vector<double> c, double t);
-  double polyeval_ddot(std::vector<double> c, double t);
-
-  TrajectoryXY generate_trajectory     (BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path);
-  TrajectoryJMT generate_trajectory_jmt(BehaviourTarget target, Map &map, PreviousPath const &previous_path);
-  TrajectoryJMT generate_trajectory_sd(BehaviourTarget target, Map &map, CarStates const &car, PreviousPath const &previous_path);
 };
+
+
+
+TrajectoryJMT JMT_init(double car_s, double car_d);
+
 
 #endif // TRAJECTORY_H
