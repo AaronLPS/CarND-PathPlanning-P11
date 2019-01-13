@@ -49,8 +49,11 @@ const int WEIGHT_COST_LEGALITY    = 100; // vs speed limits
 const int WEIGHT_COST_COMFORT     = 10; // vs jerk
 const int WEIGHT_COST_EFFICIENCY  = 1; // vs target lane, target speed and time to goal
 
+const double MAX_S = 6945.554;
 
-
+// center point of the track
+const double TRACK_CENTER_X = 1000;
+const double TRACK_CENTER_Y = 2000;
 
 
 #endif // CONFIGURATION_H

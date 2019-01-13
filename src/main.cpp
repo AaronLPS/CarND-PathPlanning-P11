@@ -9,14 +9,12 @@
 #include "Eigen-3.3/Eigen/QR"
 #include "json.hpp"
 
-//#include "utility.h"
 #include "map.h"
 #include "behaviour.h"
 #include "trajectory.h"
 #include "cost.h"
 #include "prediction.h"
 
-#include "params.h"
 
 #include <map>
 
@@ -45,26 +43,23 @@ string hasData(string s) {
 int main() {
   uWS::Hub h;
 
-  //////////////////////////////////////////////////////////////////////
+/*
+ * --------------------Initialization Start--------------------
+ * */
+  bool start_flag = true;
+  // use the updated map, which is 1 waypoint per meter
   Map map;
-
   map.read(map_file_);
-
-  //map.plot();
-
-  bool start = true;
-
-  // car_speed: current speed
-  // car_speed_target: speed at end of the planned trajectory
-  // double car_speed_target = 1.0; // mph (non 0 for XY spline traj generation to avoid issues)
+  //{x, y, s, d, yaw, speed, speed_target, lane, emergency}
   CarStates car = CarStates(0., 0., 0., 0., 0.,  0., 1.0, 0., false);
-
-  // keep track of previous s and d paths: to initialize for continuity the new trajectory
+  // keep track of previous s and d paths
   TrajectorySD prev_path_sd;
-  //////////////////////////////////////////////////////////////////////
+/*
+ * --------------------Initialization End----------------------
+ * */
 
 
-  h.onMessage([&map, &car, &start, &prev_path_sd](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&map, &car, &start_flag, &prev_path_sd](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -111,61 +106,64 @@ int main() {
 
             json msgJson;
 
-            //////////////////////////////////////////////////////////////////////
+            /*
+             * --------------------------------Path Planning Start--------------------------------
+             * */
 
             map.testError(car.x, car.y, car.yaw);
 
             int prev_size = previous_path_xy.path_x.size();
-            cout << "prev_size=" << prev_size << " car.x=" << car.x << " car.y=" << car.y << " car.s=" <<
-                    car.s << " car.d=" << car.d << " car.speed=" << car.speed << " car.speed_target=" << car.speed_target << endl;
+//            cout << "prev_size=" << prev_size << " car.x=" << car.x << " car.y=" << car.y << " car.s=" <<
+//                    car.s << " car.d=" << car.d << " car.speed=" << car.speed << " car.speed_target=" << car.speed_target << endl;
 
+            //Convert the car's (x,y) coordinates to (s,d) coordinates
             vector<double> frenet_car = map.getFrenet(car.x, car.y, deg2rad(car.yaw));
             car.s = frenet_car[0];
             car.d = frenet_car[1];
-            car.lane = (int)(car.d / LANE_WIDTH);
+            car.lane = (int)(car.d / LANE_WIDTH);//lane index
 
-            cout << "car.s=" << car.s << " car.d=" << car.d << endl;
+//            cout << "car.s=" << car.s << " car.d=" << car.d << endl;
 
-            if (start) {
-              TrajectoryJMT traj_jmt = JMT_init(car.s, car.d);
-              prev_path_sd = traj_jmt.path_sd;
-              start = false;
+            //JMT Initialization, only operate once
+            if (start_flag) {
+                TrajectoryJMT traj_jmt = JMT_init(car.s, car.d);
+                prev_path_sd = traj_jmt.path_sd;
+                start_flag = false;
             }
 
-            // -- prev_size: close to 100 msec when possible -not lower bcz of simulator latency- for trajectory (re)generation ---
-            // points _before_ prev_size are kept from previous generated trajectory
-            // points _after_  prev_size will be re-generated
+            // prev_size: close to 100 msec when possible, not lower than simulator latency
             PreviousPath previous_path = PreviousPath(previous_path_xy, prev_path_sd, min(prev_size, REACTION_LATENCY_WAYPOINTS));
 
-            // --------------------------------------------------------------------------
-            // --- 6 car predictions x 50 points x 2 coord (x,y): 6 objects predicted over 1 second horizon ---
+            // Prediction: 6 cars (3 lanes, front and back) x 50 points (50 x 0.02 = 1 second horizon)
             Prediction predictions = Prediction(sensor_fusion, car, TRAJECTORY_WAYPOINTS_NUMBER /* 50 */);
-
+            // Behaviour Plan: based on predictions and sensor fusion
             Behaviour behaviour = Behaviour(sensor_fusion, car, predictions);
             vector<BehaviourTarget> targets = behaviour.OutputBehaviourTarget();
-
+            // Trajectory generation: based on behaviour targets, and previous path
             Trajectory trajectory = Trajectory(targets, map, car, previous_path, predictions);
-            // --------------------------------------------------------------------------
 
+            // Evaluate the generated trajectories, extract the trajectory with the minimum cost
             double min_cost = trajectory.getMinCost();
             int min_cost_index = trajectory.getMinCostIndex();
             vector<double> next_x_vals = trajectory.getMinCostTrajectoryXY().path_x;
             vector<double> next_y_vals = trajectory.getMinCostTrajectoryXY().path_y;
 
+            //Update the previous path (s,d)
             if (TRAJECTORY_JMT_ENABLE) {
               prev_path_sd = trajectory.getMinCostTrajectorySD();
             }
 
-            int target_lane = targets[min_cost_index].lane;
+//            int target_lane = targets[min_cost_index].lane;
             car.speed_target = targets[min_cost_index].velocity;
+//            if (target_lane != car.lane) {
+//              cout << " [CHANGE LANE]: lowest cost for target " << min_cost_index << " target_lane=" << target_lane
+//                   << " target_vel=" << car.speed_target << " car.lane=" << car.lane << " cost="<< min_cost << ")" << endl;
+//            }
 
-            if (target_lane != car.lane) {
-              cout << "====================> CHANGE LANE: lowest cost for target " << min_cost_index << " = (target_lane=" << target_lane
-                   << " target_vel=" << car.speed_target << " car.lane=" << car.lane << " cost="<< min_cost << ")" << endl;
-            }
+            /*
+             * --------------------------------Path Planning End--------------------------------
+             * */
 
-
-            // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
             msgJson["next_x"] = next_x_vals; //trajectories[min_cost_index].x_vals; //next_x_vals;
             msgJson["next_y"] = next_y_vals; //trajectories[min_cost_index].y_vals; //next_y_vals;
 

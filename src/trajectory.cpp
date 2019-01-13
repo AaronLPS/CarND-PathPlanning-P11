@@ -154,23 +154,26 @@ TrajectoryJMT Trajectory::GenerateTrajectoryEmergency(BehaviourTarget target, Ma
 }
 
   
-
+/* @brief Initialization for JMT trajectory generation, with the first car status
+ * @param car's Frenet coordinates (s,d)
+ *
+ * */
 TrajectoryJMT JMT_init(double car_s, double car_d)
 {
-  TrajectoryJMT traj_jmt;
-  // 50 x {s, s_dot, s_ddot}
-  vector<PointC2> store_path_s(TRAJECTORY_WAYPOINTS_NUMBER, PointC2(0, 0, 0));
-  vector<PointC2> store_path_d(TRAJECTORY_WAYPOINTS_NUMBER, PointC2(0, 0, 0));
+    TrajectoryJMT traj_jmt;
 
-  for (int i = 0; i < TRAJECTORY_WAYPOINTS_NUMBER; i++) {
-    store_path_s[i] = PointC2(car_s, 0, 0);
-    store_path_d[i] = PointC2(car_d, 0, 0);
-  }
+    vector<PointC2> store_path_s(TRAJECTORY_WAYPOINTS_NUMBER, PointC2(0, 0, 0)); // 50 x {s, s_dot, s_ddot}
+    vector<PointC2> store_path_d(TRAJECTORY_WAYPOINTS_NUMBER, PointC2(0, 0, 0));
 
-  traj_jmt.path_sd.path_s = store_path_s;
-  traj_jmt.path_sd.path_d = store_path_d;
+    for (int i = 0; i < TRAJECTORY_WAYPOINTS_NUMBER; i++) {
+        store_path_s[i] = PointC2(car_s, 0, 0);
+        store_path_d[i] = PointC2(car_d, 0, 0);
+    }
 
-  return traj_jmt;
+    traj_jmt.path_sd.path_s = store_path_s;
+    traj_jmt.path_sd.path_d = store_path_d;
+
+    return traj_jmt;
 }
 
 /* @brief Calaulate the jerk-optimal connection between a start state P0 = [p0, p˙0, p¨0]
