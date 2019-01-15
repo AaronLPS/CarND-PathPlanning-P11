@@ -3,7 +3,7 @@
 /* @brief decide the target(lane and speed) on Behaviour Layer, based on Prediction Layer and Localization layer.
  * @param sensor_fusion: input detected objects' states: [ id, x, y, vx, vy, s, d]
  * @param car_states: the autonomous vehicel (ego)
- * @param prediction: input predicted lane speed
+ * @param prediction: input predicted lane speed, and safety distance
  *
  * */
 Behaviour::Behaviour(SensorFusionType const &sensor_fusion, CarStates const &car_states, Prediction const &prediction){

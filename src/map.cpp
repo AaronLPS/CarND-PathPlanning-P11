@@ -166,23 +166,22 @@ int Map::ClosestWaypoint(double x, double y, const vector<double> &maps_x, const
     }
 
     // 2) Search a point which is the nearest in a refined area
-	  //for (int i = closestWaypoint - 181; i < closestWaypoint + 181; i++)
 	  for (int i = closestWaypoint - 91; i < closestWaypoint + 91; i++) {
-      int idx = i;
-      if (i < 0) {
-        idx += size;
-      } else if (i >= size) {
-        idx -= size;
-      }
+          int idx = i;
+          if (i < 0) {
+              idx += size;
+          } else if (i >= size) {
+              idx -= size;
+          }
 
-	  	double map_x = maps_x[idx];
-	  	double map_y = maps_y[idx];
-	  	double dist = distance(x,y,map_x,map_y);
-	  	if(dist < closestLen) {
-	  		closestLen = dist;
-	  		closestWaypoint = idx;
-	  	}
-    }
+            double map_x = maps_x[idx];
+            double map_y = maps_y[idx];
+            double dist = distance(x,y,map_x,map_y);
+            if(dist < closestLen) {
+                closestLen = dist;
+                closestWaypoint = idx;
+            }
+     }
   }
 
   // TODO XX TEMP

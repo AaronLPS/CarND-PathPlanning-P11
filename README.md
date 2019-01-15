@@ -1,6 +1,63 @@
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
-   
+## Project Reflection
+### Abstract
+The path planning system was implemented to generate the trajectories given information from sensor fusion, map, and car status. The system supports the vehicle to safely navigate around a simulated highway with other traffic.  A test video (./Test_Video_PathPlanning.mp4) was recorded to provide an impression of the path planning performance. The following screenshot shows the car driving at 4.58 miles without incident.
+
+![path planning test](images/2019/01/path-planning-test.png)
+
+### System Implementation
+#### Overview
+The system was implemented based on the proposed architecture.
+![system structure](images/2019/01/system-structure.png)
+
+There are :
+
+* __Behaviour Planning__ (./src/behaviour.cpp): Get information from prediction module and car localization module. Make the decision on lane changing and the target car status. Transmit the target for trajectory generation.
+* __Prediction__ (./src/prediction.cpp): Get the information from sensor fusion module. Predict the status of the surrounding cars in a period of time. Transmit the predictions for behaviour panning and trajectory evaluation.
+* __Trajectory Generation__(./src/trajectory.cpp  ./src/cost.cpp): Get information from behaviour planning and car localisation to identify the start and the target waypoints and then generate the trajectory. Get information from prediction module to evaluate the trajectory candidates. Send the optimal trajectory to motion control module.
+
+_(Motion control is beyond the scope of this project. sensor fusion and car localisation were also prepared and provided)_
+
+#### Behaviour Planning
+
+Decide the target(lane and speed), based on predictions(lane speed and safety distance) and the ego car states (id, x, y, vx, vy, s, d). The ego car was trying its best to run on max speed. Safety distance was used to adjust the car velocity and the distance to other cars nearby. Backup behaviour planning mechanism was also implemented for finding a collision free alternative. Some second best trajectories were proposed by slightly modify the speed and lanes.
+
+#### Prediction
+Predict the surrounding vehicles behaviour in the range of vision(waypoints), based on sensor fusion inputs and ego car states.
+
+First, detect surrounding objects using sensor fusion outputs and states of ego car. Only the closest objects were detected, max 6 cars( 3 front + 3 back ) on 3 lanes. Second, predict the position of each object with time and vision_range. Those outputs will be used on the further trajectory validation check. Then, the safety distance of each lane was calculated based on the the velocity of the front and back cars, ego car deceleration, time latency and constant safety margin. At last, given the information of safety distance and detected objects speed, the max speed and max free space for each lane were calculated.
+
+#### Trajectory generation
+ Trajectories on both (s,d) and (x,y) coordinates were generated, based on behaviour target and previous path. The end part of previous path will be used as the begining of the next path, and thus the consistence will be kept.
+JMT trajectory generation algorithm calculate the jerk-optimal connection between a start state P0 = [p0, p˙0, p¨0] and an end state P1 = [p1, p˙1, p¨1] within the time interval T := t1 − t0. Quintic polynomials are proofed that it is the jerk-optimal connection in a one-dimensional problem.  More information of JMT algorithm can be found at "Optimal Trajectory Generation for Dynamic Street Scenarios in a Frenet Frame" (s,d) trajectory was generated first and then converted to (x,y) coordinates. At higher speeds, d(t) and s(t) can be chosen independently. At extreme low speeds, this strategy disregards the non-holonomic property of the car, so that the majority of the trajectories has to be rejected due to invalid curvatures. Thus, the generator will switch below a certain velocity threshold to a slightly different trajectory mode generating the lateral trajectory in dependence on the longitudinal movement. In emergency situation, according to behaviour planning input, a special trajectory generate process will be triggered. It uses the fastest way to generated a trajectory with no changes on d. (stay in the same lane) and  keep constant acceleration or deceleration in 2sec waypoints. SAT (Separating Axis Theorem) collision detection algorithm was used to check the validation of trajectory candidates. Cost function was designed according to the following layers:
+![cost function trajectories](images/2019/01/cost-function-trajectories.png)
+Different weights was arranged for each layers based on its importance. Feasibility was dispatched with the highest weights and the efficiency with the lowest.
+
+#### Map:
+The original map was 30 meters per waypoints. SPLINE was used to enhance the precision of the Map to 1 point every 1 meter. The conversion between (x,y) coordinates and (s.d) coordinates were also implemented here.
+
+
+## Reference
+
+* Moritz Werling, Julius Ziegler, So¨ren Kammel, and Sebastian Thrun.
+Optimal Trajectory Generation for Dynamic Street Scenarios in a Frenet Frame
+
+* https://github.com/PhilippeW83440/CarND-Path-Planning-Project
+
+* SAT (Separating Axis Theorem) http://www.dyn4j.org/2010/01/sat/
+
+* A. Takahashi, T. Hongo, Y. Ninomiya, and G. Sugimoto. Local
+path planning and motion control for AGV in positioning
+
+* Junior: The Stanford Entry in the Urban Challenge
+https://www.researchgate.net/publication/227506544_Junior_The_Stanford_Entry_in_the_Urban_Challenge
+
+* Towards fully autonomous driving: Systems and algorithms
+https://www.researchgate.net/publication/224244859_Towards_fully_autonomous_driving_Systems_and_algorithms
+
+
+
 ### Simulator.
 You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2).
 
@@ -38,13 +95,13 @@ Here is the data provided from the Simulator to the C++ Program
 #### Previous path data given to the Planner
 
 //Note: Return the previous list but with processed points removed, can be a nice tool to show how far along
-the path has processed since last time. 
+the path has processed since last time.
 
 ["previous_path_x"] The previous list of x points previously given to the simulator
 
 ["previous_path_y"] The previous list of y points previously given to the simulator
 
-#### Previous path's end s and d values 
+#### Previous path's end s and d values
 
 ["end_path_s"] The previous list's last point's frenet s value
 
@@ -52,7 +109,7 @@ the path has processed since last time.
 
 #### Sensor Fusion Data, a list of all other car's attributes on the same side of the road. (No Noise)
 
-["sensor_fusion"] A 2d vector of cars and then that car's [car's unique ID, car's x position in map coordinates, car's y position in map coordinates, car's x velocity in m/s, car's y velocity in m/s, car's s position in frenet coordinates, car's d position in frenet coordinates. 
+["sensor_fusion"] A 2d vector of cars and then that car's [car's unique ID, car's x position in map coordinates, car's y position in map coordinates, car's x velocity in m/s, car's y velocity in m/s, car's s position in frenet coordinates, car's d position in frenet coordinates.
 
 ## Details
 
@@ -82,7 +139,7 @@ A really helpful resource for doing this project and creating smooth trajectorie
   * Run either `install-mac.sh` or `install-ubuntu.sh`.
   * If you install from source, checkout to commit `e94b6e1`, i.e.
     ```
-    git clone https://github.com/uWebSockets/uWebSockets 
+    git clone https://github.com/uWebSockets/uWebSockets
     cd uWebSockets
     git checkout e94b6e1
     ```
@@ -137,4 +194,3 @@ still be compilable with cmake and make./
 
 ## How to write a README
 A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-

@@ -3,6 +3,14 @@
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 
+/* @brief creaat trajectories based on behaviour targets, and find the minimum cost trajectory.
+ * @param targets: behaviour planning targets
+ * @param map:
+ * @param car states:
+ * @param previous path: will be used as start of next trajectory
+ * @param prediction: objects position prediction for trajectories cost evaluation
+ * */
+
 Trajectory::Trajectory(vector<BehaviourTarget> targets, Map &map, CarStates &car, PreviousPath &previous_path, Prediction &predictions)
 {
     for (size_t i = 0; i < targets.size(); i++) {//creat a trajectory for each target on behaviour layer
@@ -53,7 +61,7 @@ Trajectory::Trajectory(vector<BehaviourTarget> targets, Map &map, CarStates &car
   }
 
   if (car.emergency) {
-    cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! trajectory_sd !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+    cout << "Tajectory short distance";
   }
 }
 
